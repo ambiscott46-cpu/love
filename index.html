@@ -1,0 +1,919 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>A Message For You ✦</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Cinzel:wght@400;600;900&family=Playfair+Display:ital,wght@1,700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --rose:#ff6b9d;--rosedark:#c73af0;--gold:#f5c842;--deep:#04000c;--white:#fff5f8;
+  --blue:#3a8fff;--orange:#ff9a3c;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html,body{width:100%;min-height:100%;background:var(--deep);color:var(--white);font-family:'Cormorant Garamond',serif;overflow-x:hidden;}
+
+/* ── CANVAS ── */
+#cosmos{position:fixed;inset:0;z-index:0;pointer-events:none;}
+
+/* ── NEBULAE ── */
+.neb{position:fixed;border-radius:50%;filter:blur(100px);pointer-events:none;z-index:1;animation:nebPulse 16s ease-in-out infinite alternate;}
+.nb1{width:600px;height:600px;background:radial-gradient(circle,rgba(199,58,240,.35),transparent 70%);top:-160px;left:-160px;}
+.nb2{width:500px;height:500px;background:radial-gradient(circle,rgba(255,79,139,.3),transparent 70%);bottom:-120px;right:-120px;animation-delay:-8s;}
+.nb3{width:350px;height:350px;background:radial-gradient(circle,rgba(58,143,255,.25),transparent 70%);top:35%;left:50%;animation-delay:-4s;}
+.nb4{width:250px;height:250px;background:radial-gradient(circle,rgba(245,200,66,.2),transparent 70%);top:60%;left:10%;animation-delay:-11s;}
+@keyframes nebPulse{from{transform:translate(0,0) scale(1);opacity:.18;}to{transform:translate(35px,22px) scale(1.15);opacity:.28;}}
+
+/* ── CINEMATIC BARS ── */
+.cin{position:fixed;left:0;right:0;height:72px;background:var(--deep);z-index:25;pointer-events:none;transition:transform 1.1s cubic-bezier(.77,0,.18,1);}
+#ctop{top:0;}#cbot{bottom:0;}
+body.open #ctop{transform:translateY(-100%);}
+body.open #cbot{transform:translateY(100%);}
+
+/* ── SCENE SYSTEM ── */
+.scene{
+  position:fixed;inset:0;z-index:10;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  opacity:0;pointer-events:none;padding:22px;overflow-y:auto;
+}
+.scene.active{opacity:1;pointer-events:all;}
+
+/* ── GLASS CARD ── */
+.card{
+  background:rgba(6,0,16,.82);
+  border:1px solid rgba(255,107,157,.2);
+  border-radius:30px;
+  padding:46px 38px 40px;
+  max-width:460px;width:100%;
+  backdrop-filter:blur(30px);-webkit-backdrop-filter:blur(30px);
+  position:relative;overflow:hidden;
+}
+/* card enter animation — played via JS class */
+.card-in{animation:cardReveal .9s cubic-bezier(.22,1,.36,1) both;}
+@keyframes cardReveal{
+  0%{opacity:0;transform:translateY(40px) scale(.94);filter:blur(8px);}
+  100%{opacity:1;transform:translateY(0) scale(1);filter:blur(0);}
+}
+/* border glow pulse */
+.card::after{
+  content:'';position:absolute;inset:-1px;border-radius:31px;
+  background:linear-gradient(135deg,rgba(199,58,240,.4),rgba(255,107,157,.2),rgba(58,143,255,.2),rgba(245,200,66,.2));
+  background-size:300% 300%;z-index:-1;
+  animation:borderSpin 6s linear infinite;
+}
+@keyframes borderSpin{0%{background-position:0% 50%;}50%{background-position:100% 50%;}100%{background-position:0% 50%;}}
+.card::before{content:'';position:absolute;inset:1px;background:rgba(6,0,16,.85);border-radius:29px;z-index:-1;}
+/* inner glow */
+.card-glow{
+  position:absolute;inset:0;border-radius:30px;pointer-events:none;
+  box-shadow:0 0 80px rgba(199,58,240,.14),0 0 160px rgba(255,79,139,.07),inset 0 1px 0 rgba(255,255,255,.08);
+  animation:glowBreath 4s ease-in-out infinite;
+}
+@keyframes glowBreath{0%,100%{box-shadow:0 0 80px rgba(199,58,240,.14),0 0 160px rgba(255,79,139,.07),inset 0 1px 0 rgba(255,255,255,.08);}50%{box-shadow:0 0 130px rgba(199,58,240,.28),0 0 240px rgba(255,79,139,.16),inset 0 1px 0 rgba(255,255,255,.12);}}
+
+/* ── LABEL / TITLES ── */
+.label{
+  font-family:'Cinzel',serif;font-size:9.5px;letter-spacing:6px;
+  color:rgba(245,200,66,.75);text-transform:uppercase;margin-bottom:14px;
+  animation:labelIn .6s ease both;
+}
+@keyframes labelIn{from{opacity:0;letter-spacing:12px;}to{opacity:1;letter-spacing:6px;}}
+
+.qtitle{
+  font-family:'Cinzel',serif;font-size:clamp(17px,5vw,27px);font-weight:600;line-height:1.4;
+  margin-bottom:8px;
+  animation:titleIn .8s cubic-bezier(.22,1,.36,1) .1s both;
+}
+@keyframes titleIn{
+  0%{opacity:0;transform:translateY(24px) skewX(-3deg);filter:blur(6px);}
+  100%{opacity:1;transform:none;filter:blur(0);}
+}
+
+.qsub{
+  font-size:14.5px;line-height:1.75;color:rgba(255,245,248,.58);font-style:italic;
+  margin:11px 0 26px;
+  animation:subIn .7s ease .25s both;
+}
+@keyframes subIn{from{opacity:0;transform:translateY(12px);}to{opacity:1;transform:none;}}
+
+.divider{
+  height:1px;width:0;
+  background:linear-gradient(90deg,transparent,var(--rose),transparent);
+  margin:0 auto 18px;
+  animation:divGrow .8s ease .05s forwards;
+}
+@keyframes divGrow{to{width:60px;}}
+
+/* ── BUTTONS ── */
+.btn-row{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;animation:btnRowIn .7s ease .35s both;}
+@keyframes btnRowIn{from{opacity:0;transform:translateY(16px);}to{opacity:1;transform:none;}}
+
+.btn{
+  font-family:'Cinzel',serif;font-size:11.5px;letter-spacing:2.5px;
+  padding:14px 26px;border:none;border-radius:50px;
+  cursor:pointer;position:relative;overflow:hidden;
+  -webkit-tap-highlight-color:transparent;touch-action:manipulation;
+  min-width:100px;
+  transition:transform .3s cubic-bezier(.22,1,.36,1),box-shadow .3s;
+}
+/* shimmer sweep on hover */
+.btn::before{
+  content:'';position:absolute;top:0;left:-100%;width:60%;height:100%;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.25),transparent);
+  transition:left .5s ease;
+}
+.btn:hover::before{left:160%;}
+.btn:hover{transform:scale(1.09) translateY(-2px);}
+.btn:active{transform:scale(.88)!important;transition:transform .1s;}
+
+/* ripple on click */
+.btn .ripple{
+  position:absolute;border-radius:50%;
+  transform:scale(0);animation:rippleOut .6s linear;
+  background:rgba(255,255,255,.3);pointer-events:none;
+}
+@keyframes rippleOut{to{transform:scale(4);opacity:0;}}
+
+.btn-yes{
+  background:linear-gradient(135deg,#c73af0 0%,#ff4f8b 60%,#ff9a3c 100%);
+  background-size:200% 200%;color:#fff;
+  box-shadow:0 5px 30px rgba(199,58,240,.5),0 2px 8px rgba(255,79,139,.3);
+  animation:btnYesPulse 3s ease-in-out infinite;
+}
+@keyframes btnYesPulse{0%,100%{box-shadow:0 5px 30px rgba(199,58,240,.5),0 2px 8px rgba(255,79,139,.3);}50%{box-shadow:0 8px 50px rgba(199,58,240,.75),0 4px 16px rgba(255,79,139,.5);}}
+.btn-yes:hover{box-shadow:0 10px 60px rgba(199,58,240,.85);}
+
+.btn-no{
+  background:rgba(255,255,255,.04);
+  color:rgba(255,245,248,.7);
+  border:1px solid rgba(255,107,157,.3);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.06);
+}
+.btn-no:hover{border-color:rgba(255,107,157,.9);color:var(--white);background:rgba(255,107,157,.08);}
+
+.btn-gold{
+  background:linear-gradient(135deg,#f5c842,#ff9a3c);
+  color:#1a0500;font-weight:700;
+  box-shadow:0 5px 28px rgba(245,200,66,.5);
+}
+.btn-gold:hover{box-shadow:0 8px 46px rgba(245,200,66,.75);}
+
+.btn-blue{background:linear-gradient(135deg,#1a6fff,#6b3af0);color:#fff;box-shadow:0 5px 28px rgba(26,111,255,.5);}
+
+/* ── TEXTAREA ── */
+.txt-area{
+  width:100%;min-height:95px;
+  background:rgba(255,255,255,.04);border:1px solid rgba(255,107,157,.25);
+  border-radius:16px;padding:14px;color:var(--white);
+  font-family:'Cormorant Garamond',serif;font-size:16px;resize:none;outline:none;
+  transition:border-color .3s,box-shadow .3s,transform .3s;
+  margin-bottom:14px;display:block;
+  animation:inputReveal .6s ease both;
+}
+@keyframes inputReveal{from{opacity:0;transform:scaleY(.8);transform-origin:top;}to{opacity:1;transform:scaleY(1);}}
+.txt-area:focus{border-color:rgba(255,107,157,.75);box-shadow:0 0 24px rgba(255,107,157,.18),0 0 60px rgba(199,58,240,.08);transform:scale(1.01);}
+.txt-area::placeholder{color:rgba(255,245,248,.28);}
+
+/* ── OVERLAY ── */
+.overlay{
+  position:fixed;inset:0;z-index:500;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  opacity:0;pointer-events:none;
+  padding:28px;text-align:center;
+  transition:opacity .5s ease;
+}
+.overlay.show{opacity:1;pointer-events:all;}
+.ov-bg{
+  position:absolute;inset:0;
+  background:rgba(4,0,12,.95);
+  backdrop-filter:blur(28px);-webkit-backdrop-filter:blur(28px);
+}
+.ov-content{position:relative;z-index:1;width:100%;display:flex;flex-direction:column;align-items:center;}
+
+.ov-text{
+  font-family:'Cinzel',serif;font-size:clamp(23px,7.5vw,60px);font-weight:900;line-height:1.25;
+  background:linear-gradient(135deg,#ff6b9d,#f5c842,#c73af0,#ff6b9d);
+  background-size:300% 300%;
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+  animation:ovBurst .9s cubic-bezier(.22,1,.36,1) both, gradShift 4s ease infinite;
+  filter:drop-shadow(0 0 30px rgba(255,107,157,.7));
+}
+@keyframes ovBurst{
+  0%{opacity:0;transform:scale(.2) rotate(-8deg);filter:blur(22px) drop-shadow(0 0 0 transparent);}
+  55%{opacity:1;transform:scale(1.12) rotate(1.5deg);}
+  100%{opacity:1;transform:scale(1) rotate(0);filter:drop-shadow(0 0 30px rgba(255,107,157,.7));}
+}
+@keyframes gradShift{0%,100%{background-position:0% 50%;}50%{background-position:100% 50%;}}
+
+.ov-emoji{font-size:clamp(50px,15vw,90px);animation:emojiPop .7s cubic-bezier(.22,1,.36,1) .1s both,emojiBounce 2s ease-in-out infinite 1s;display:block;margin-bottom:10px;}
+@keyframes emojiPop{0%{opacity:0;transform:scale(0) rotate(-20deg);}70%{transform:scale(1.2) rotate(5deg);}100%{opacity:1;transform:scale(1) rotate(0);}}
+@keyframes emojiBounce{0%,100%{transform:translateY(0) rotate(-3deg);}50%{transform:translateY(-10px) rotate(3deg);}}
+
+.ov-sub{font-style:italic;font-size:clamp(14px,3.8vw,20px);color:rgba(255,245,248,.62);margin-top:16px;animation:fadeUp .7s ease .35s both;}
+.ov-btn{margin-top:36px;animation:fadeUp .7s ease .6s both;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(18px);}to{opacity:1;transform:none;}}
+
+/* scan line inside overlay */
+.ov-scan{
+  position:absolute;inset:0;pointer-events:none;overflow:hidden;opacity:.04;
+  background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(255,255,255,1) 2px,rgba(255,255,255,1) 4px);
+  animation:scanMove 8s linear infinite;
+}
+@keyframes scanMove{from{background-position:0 0;}to{background-position:0 100%;}}
+
+/* ── PARTICLES ── */
+.petal{position:fixed;pointer-events:none;z-index:18;animation:petalFall linear forwards;will-change:transform;}
+@keyframes petalFall{0%{transform:translateY(-60px) rotate(0) scale(0);opacity:0;}6%{opacity:1;transform:scale(1);}100%{transform:translateY(115vh) rotate(720deg) scale(.3);opacity:0;}}
+.edrop{position:fixed;top:-50px;pointer-events:none;z-index:17;animation:eDrop linear forwards;will-change:transform;}
+@keyframes eDrop{0%{transform:translateY(0) rotate(-12deg) scale(1);opacity:1;}100%{transform:translateY(115vh) rotate(15deg) scale(.6);opacity:0;}}
+
+/* ── RING PULSES (background ambient) ── */
+.ring-bg{
+  position:fixed;left:50%;top:50%;border-radius:50%;
+  border:1px solid rgba(255,107,157,.12);pointer-events:none;z-index:2;
+  animation:ringBg 8s ease-out infinite;
+}
+@keyframes ringBg{0%{width:60px;height:60px;margin:-30px;opacity:.6;}100%{width:900px;height:900px;margin:-450px;opacity:0;}}
+
+/* ── PROGRESS DOTS ── */
+#pdots{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);display:flex;gap:10px;z-index:55;}
+.pdot{width:7px;height:7px;border-radius:50%;background:rgba(255,107,157,.2);transition:all .5s cubic-bezier(.22,1,.36,1);}
+.pdot.on{background:var(--rose);transform:scale(1.7);box-shadow:0 0 12px rgba(255,107,157,.8);}
+
+/* ── CURTAIN ── */
+#curtain{position:fixed;inset:0;z-index:450;background:var(--deep);opacity:0;pointer-events:none;transition:opacity .55s ease;}
+#curtain.show{opacity:1;}
+
+/* ── I LOVE YOU ── */
+#ily{
+  position:fixed;inset:0;z-index:950;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  opacity:0;pointer-events:none;transition:opacity 1s ease;
+  text-align:center;padding:28px;overflow:hidden;
+}
+#ily.show{opacity:1;pointer-events:all;}
+#ily-bg{
+  position:absolute;inset:0;
+  background:radial-gradient(ellipse at 50% 40%,#28002e 0%,#0c0015 50%,#040008 100%);
+  animation:ilyBgPulse 3s ease-in-out infinite;
+}
+@keyframes ilyBgPulse{0%,100%{background:radial-gradient(ellipse at 50% 40%,#28002e 0%,#0c0015 50%,#040008 100%);}50%{background:radial-gradient(ellipse at 50% 40%,#380040 0%,#150020 50%,#040008 100%);}}
+#ily-content{position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;}
+.ily-text{
+  font-family:'Cinzel',serif;font-size:clamp(46px,15vw,110px);font-weight:900;
+  background:linear-gradient(135deg,#ff6b9d,#f5c842,#c73af0,#ff6b9d);
+  background-size:300% 300%;
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+  animation:ilyBurst 1.6s cubic-bezier(.22,1,.36,1) both,gradShift 3s ease infinite 2s;
+  filter:drop-shadow(0 0 55px rgba(255,107,157,.95));
+  letter-spacing:4px;
+}
+@keyframes ilyBurst{
+  0%{opacity:0;transform:scale(0) rotate(-15deg);letter-spacing:50px;filter:blur(25px);}
+  55%{opacity:1;transform:scale(1.14) rotate(2deg);letter-spacing:8px;}
+  100%{opacity:1;transform:scale(1) rotate(0);letter-spacing:4px;filter:drop-shadow(0 0 55px rgba(255,107,157,.95));}
+}
+.ily-heart{font-size:clamp(36px,10vw,70px);animation:heartFloat 2s ease .2s both,heartFloatLoop 3s ease-in-out infinite 2.5s;display:block;margin:10px 0;}
+@keyframes heartFloat{0%{opacity:0;transform:scale(0) translateY(30px);}70%{transform:scale(1.3) translateY(-5px);}100%{opacity:1;transform:scale(1) translateY(0);}}
+@keyframes heartFloatLoop{0%,100%{transform:translateY(0) scale(1);}50%{transform:translateY(-12px) scale(1.08);}}
+.ily-sub{font-size:clamp(18px,5.5vw,32px);font-style:italic;color:rgba(255,245,248,.88);margin-top:18px;animation:fadeUp 1s ease 1.4s both;}
+.ily-sub2{font-family:'Cinzel',serif;font-size:11px;letter-spacing:6px;color:rgba(245,200,66,.72);margin-top:14px;animation:fadeUp 1s ease 2s both;}
+/* floating hearts behind text */
+.ily-float{position:absolute;animation:ilyFloat linear infinite;font-size:22px;pointer-events:none;opacity:.5;}
+@keyframes ilyFloat{0%{transform:translateY(110vh) rotate(-20deg);}100%{transform:translateY(-10vh) rotate(20deg);}}
+/* ring pulses on ILY */
+.ily-ring{position:absolute;border-radius:50%;border:1px solid rgba(255,107,157,.3);animation:ilyRing 2.5s ease-out infinite;}
+@keyframes ilyRing{0%{width:20px;height:20px;margin:-10px;opacity:.8;}100%{width:800px;height:800px;margin:-400px;opacity:0;}}
+
+/* ── ADMIN LINK ── */
+#admin-link{
+  position:fixed;top:18px;right:18px;z-index:60;
+  font-family:'Cinzel',serif;font-size:9px;letter-spacing:3px;
+  color:rgba(255,107,157,.3);text-decoration:none;
+  transition:color .4s,text-shadow .4s;
+  text-transform:uppercase;
+}
+#admin-link:hover{color:var(--rose);text-shadow:0 0 20px rgba(255,107,157,.6);}
+
+/* ── MOBILE ── */
+@media(max-width:400px){
+  .card{padding:32px 20px 28px;}
+  .btn{padding:13px 18px;font-size:10.5px;min-width:84px;}
+  .ily-text{letter-spacing:2px;}
+}
+</style>
+</head>
+<body>
+
+<!-- ═══ FORMSPREE FORM (hidden) ═══ -->
+<form id="formspree-form" style="display:none;">
+  <input type="hidden" name="time" id="f-time">
+  <input type="hidden" name="unfollow_reason" id="f-unfollow">
+  <input type="hidden" name="proposed_him" id="f-proposed">
+  <input type="hidden" name="proposed_him_details" id="f-proposed-details">
+  <input type="hidden" name="propose_no_reason" id="f-propose-no">
+  <input type="hidden" name="relationship" id="f-relationship">
+  <input type="hidden" name="give_chance" id="f-chance">
+  <input type="hidden" name="final_answer" id="f-final">
+  <input type="hidden" name="stethoscope_answer" id="f-steth">
+</form>
+
+<div class="cin" id="ctop"></div>
+<div class="cin" id="cbot"></div>
+<canvas id="cosmos"></canvas>
+<div class="neb nb1"></div><div class="neb nb2"></div><div class="neb nb3"></div><div class="neb nb4"></div>
+
+<!-- ambient rings -->
+<div class="ring-bg" style="animation-delay:0s;"></div>
+<div class="ring-bg" style="animation-delay:2.5s;"></div>
+<div class="ring-bg" style="animation-delay:5s;"></div>
+
+<div id="curtain"></div>
+<div id="emoji-rain" style="position:fixed;inset:0;z-index:16;pointer-events:none;"></div>
+<a id="admin-link" href="admin.html" target="_blank">⬡ Records</a>
+
+<div id="pdots">
+  <div class="pdot on"></div>
+  <div class="pdot"></div>
+  <div class="pdot"></div>
+  <div class="pdot"></div>
+  <div class="pdot"></div>
+  <div class="pdot"></div>
+  <div class="pdot"></div>
+</div>
+
+<!-- ══════════════════════════════════════
+     SCENE 0 — Are You Free Madam Ji?
+══════════════════════════════════════ -->
+<div class="scene active" id="s0">
+  <div class="card card-in">
+    <div class="card-glow"></div>
+    <div class="label">✦ &nbsp; Oru Nimisham &nbsp; ✦</div>
+    <div class="divider"></div>
+    <div class="qtitle">Are You Free<br><span style="font-weight:300;font-size:.84em;font-style:italic;">Madam Ji? 🌙</span></div>
+    <p class="qsub">The stars have been holding their breath<br>waiting just for your answer…</p>
+    <div class="btn-row">
+      <button class="btn btn-yes" onclick="ripple(this);setTimeout(()=>go(1),220)">✦ &nbsp; YES &nbsp; ✦</button>
+      <button class="btn btn-no"  onclick="ripple(this);setTimeout(()=>showOv('ov-s0no'),120)">NO</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     SCENE 1 — Y U Unfollowed Me?
+══════════════════════════════════════ -->
+<div class="scene" id="s1">
+  <div class="card">
+    <div class="card-glow"></div>
+    <div class="label">✦ &nbsp; Serious Question &nbsp; ✦</div>
+    <div class="divider"></div>
+    <div class="qtitle">Ena Achi Bro 😤<br><span style="font-weight:300;font-size:.82em;font-style:italic;">Y U Unfollowed Me?</span></div>
+    <p class="qsub">No judgement… probably 😅<br>Be honest with the universe.</p>
+    <div class="btn-row" id="s1btns">
+      <button class="btn btn-yes" onclick="ripple(this);setTimeout(showReasonInput,150)">Reason ✦</button>
+      <button class="btn btn-gold" onclick="ripple(this);setTimeout(s1Ishtam,150)">En Ishtam 😌</button>
+    </div>
+    <div id="reason-box" style="display:none;margin-top:18px;">
+      <textarea class="txt-area" id="reason-txt" placeholder="Type your reason here… 💬 (can't skip this 😏)"></textarea>
+      <div class="btn-row" style="animation:none;">
+        <button class="btn btn-yes" onclick="ripple(this);setTimeout(submitReason,150)">Submit ✦</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     SCENE 2 — Have You Proposed Him?
+══════════════════════════════════════ -->
+<div class="scene" id="s2">
+  <div class="card">
+    <div class="card-glow"></div>
+    <div class="label">✦ &nbsp; Secret Time &nbsp; ✦</div>
+    <div class="divider"></div>
+    <div class="qtitle">Have You<br><span style="font-weight:300;font-size:.86em;font-style:italic;">Proposed Him? 💌</span></div>
+    <p class="qsub">The universe already knows bro…<br>just confirming 😌</p>
+    <div class="btn-row" id="s2btns">
+      <button class="btn btn-yes" onclick="ripple(this);setTimeout(proposeYes,150)">Yes ✦</button>
+      <button class="btn btn-no"  onclick="ripple(this);setTimeout(proposeNo,150)">No</button>
+    </div>
+    <div id="propose-box" style="display:none;margin-top:18px;">
+      <textarea class="txt-area" id="propose-txt" placeholder="So what's stopping you? 🤔"></textarea>
+      <div class="btn-row" style="animation:none;">
+        <button class="btn btn-yes" onclick="ripple(this);setTimeout(submitProposeReason,150)">Submit ✦</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     SCENE 3 — Are You In A Relationship?
+══════════════════════════════════════ -->
+<div class="scene" id="s3">
+  <div class="card">
+    <div class="card-glow"></div>
+    <div class="label">✦ &nbsp; Just Asking &nbsp; ✦</div>
+    <div class="divider"></div>
+    <div class="qtitle">Are You In A<br><span style="font-weight:300;font-size:.86em;font-style:italic;">Relationship? 💑</span></div>
+    <p class="qsub">Honest answers only please 🙏<br>the stars are watching…</p>
+    <div class="btn-row">
+      <button class="btn btn-yes" onclick="ripple(this);setTimeout(relYes,150)">Yes 💑</button>
+      <button class="btn btn-no"  onclick="ripple(this);setTimeout(relNo,150)">No 🙅</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     SCENE 4 — Will U Give Me A Chance?
+══════════════════════════════════════ -->
+<div class="scene" id="s4">
+  <div class="card">
+    <div class="card-glow"></div>
+    <div class="label">✦ &nbsp; The Real Question &nbsp; ✦</div>
+    <div class="divider"></div>
+    <div class="qtitle">Bro Will U Give<br><span style="font-weight:300;font-size:.86em;font-style:italic;">Me A Chance? 🥺</span></div>
+    <p class="qsub">Think carefully…<br>The Universe is waiting for Us 🌙</p>
+    <div class="btn-row">
+      <button class="btn btn-gold" onclick="ripple(this);setTimeout(()=>chanceClick('0.00001%'),150)">0.00001% 😂</button>
+      <button class="btn btn-yes"  onclick="ripple(this);setTimeout(()=>chanceClick('yes'),150)">Yes ✦</button>
+      <button class="btn btn-no" id="chanceNo"
+        onmouseenter="jumpBtn(this)" ontouchstart="jumpBtn(this)"
+        onclick="ripple(this);setTimeout(()=>chanceClick('no'),150)">No</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     SCENE 5 — Naan Endha Vati Vidamaten
+══════════════════════════════════════ -->
+<div class="scene" id="s5">
+  <div class="card">
+    <div class="card-glow"></div>
+    <div class="label">✦ &nbsp; Final Promise &nbsp; ✦</div>
+    <div class="divider"></div>
+    <div class="qtitle">ponavati mari nadhakadhu<br><span style="font-weight:300;font-size:.82em;font-style:italic;">Sathiyama Sollran...</span></div>
+    <p class="qsub">This isn't a line, this is a promise.<br>The universe heard it too. ✦</p>
+    <div class="btn-row">
+      <button class="btn btn-yes" onclick="ripple(this);setTimeout(finalYes,150)">Namburan ✦</button>
+      <button class="btn btn-no"  onclick="ripple(this);setTimeout(finalNoClick,150)">Nambikai Ela</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     SCENE 6 — Stethoscope Question
+══════════════════════════════════════ -->
+<div class="scene" id="s6">
+  <div class="card">
+    <div class="card-glow"></div>
+    <div class="label">✦ &nbsp; Manasara Keakuran &nbsp; ✦</div>
+    <div class="divider"></div>
+    <div class="qtitle" style="font-size:clamp(10px,2.5vw,14px);font-weight:400;letter-spacing:4px;color:rgba(245,200,66,.75);text-transform:lowercase;margin-bottom:10px;animation:labelIn .6s ease both;font-family:'Cormorant Garamond',serif;font-style:italic;">manasara keakuran</div>
+    <div class="qtitle" style="font-size:clamp(21px,5.5vw,34px);font-weight:900;line-height:1.28;animation:titleIn .9s cubic-bezier(.22,1,.36,1) .2s both;">I Want To Be Your<br>Stethoscope Forever 🩺💓</div>
+    <p class="qsub">Close enough to hear your heartbeat,<br>every single day… ✦</p>
+    <div class="btn-row">
+      <button class="btn btn-yes" onclick="ripple(this);setTimeout(stethYes,150)">YES 💖</button>
+      <button class="btn btn-no"  onclick="ripple(this);setTimeout(stethNo,150)">NO</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     I LOVE YOU SCENE
+══════════════════════════════════════ -->
+<div id="ily">
+  <div id="ily-bg"></div>
+  <div id="ily-content">
+    <div class="ily-ring" style="animation-delay:0s;"></div>
+    <div class="ily-ring" style="animation-delay:.8s;"></div>
+    <div class="ily-ring" style="animation-delay:1.6s;"></div>
+    <div class="ily-ring" style="animation-delay:2.4s;"></div>
+    <span class="ily-heart">💖</span>
+    <div class="ily-text">I Love You<br><span style="font-size:.55em;letter-spacing:8px;">DOCTOREE 🩺</span></div>
+    <div class="ily-sub">Naan Serious Ah Soluran 💕</div>
+    <div class="ily-sub2">✦ &nbsp; YOUR STETHOSCOPE FOREVER &nbsp; ✦</div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════
+     ALL OVERLAYS
+═══════════════════════════════════════════════════ -->
+
+<!-- S0 No -->
+<div class="overlay" id="ov-s0no">
+  <div class="ov-bg"></div><div class="ov-scan"></div>
+  <div class="ov-content">
+    <span class="ov-emoji">😅</span>
+    <div class="ov-text">Come On!<br>Just Say YES!</div>
+    <div class="ov-sub">The universe already knew your answer anyway 🌙</div>
+    <div class="ov-btn"><button class="btn btn-yes" onclick="ripple(this);closeOv('ov-s0no');setTimeout(()=>go(1),480)">YESS &nbsp;✦</button></div>
+  </div>
+</div>
+
+<!-- S1 En Ishtam — popup + goes straight to Q2, no textarea -->
+<div class="overlay" id="ov-ishtam">
+  <div class="ov-bg"></div><div class="ov-scan"></div>
+  <div class="ov-content">
+    <span class="ov-emoji">😏</span>
+    <div class="ov-text">Enaku Theriyum<br>Nee Epadi Dhn<br>Solluvaenu</div>
+    <div class="ov-sub">Classic move. Absolutely classic 🌟<br>Ena Bro Unfollow pana ena Varapodhu…</div>
+    <div class="ov-btn"><button class="btn btn-yes" onclick="ripple(this);closeOv('ov-ishtam');setTimeout(()=>go(2),480)">Seri Da &nbsp;✦</button></div>
+  </div>
+</div>
+
+<!-- S2 Proposed YES — WHAT THIS IS MY END -->
+<div class="overlay" id="ov-proposed-yes">
+  <div class="ov-bg"></div><div class="ov-scan"></div>
+  <div class="ov-content">
+    <span class="ov-emoji">😱</span>
+    <div class="ov-text">WHAT?!<br>THIS IS MY END</div>
+    <div class="ov-sub">Ok ok… tell me everything 👂<br>What happened exactly??</div>
+    <div class="ov-btn" style="width:100%;max-width:400px;display:flex;flex-direction:column;align-items:center;gap:12px;">
+      <textarea class="txt-area" id="propose-yes-txt" placeholder="What happened?? Tell me 😭 (required!)" style="margin-bottom:8px;"></textarea>
+      <button class="btn btn-yes" onclick="ripple(this);setTimeout(submitProposeYesReason,150)">Submit &nbsp;✦</button>
+    </div>
+  </div>
+</div>
+
+<!-- Relationship YES — SAD -->
+<div class="overlay" id="ov-rel-yes">
+  <div class="ov-bg"></div><div class="ov-scan"></div>
+  <div class="ov-content">
+    <span class="ov-emoji" style="font-size:clamp(55px,18vw,100px);">😢</span>
+    <div class="ov-text" style="font-size:clamp(20px,5.5vw,44px);">Oh… 💔</div>
+    <div class="ov-sub" style="font-size:clamp(15px,4vw,22px);color:rgba(255,245,248,.75);">That stings a little bro…<br>but it's okay, still not giving up 🌙</div>
+    <div class="ov-btn"><button class="btn btn-yes" onclick="ripple(this);closeOv('ov-rel-yes');setTimeout(()=>go(4),480)">I Know… &nbsp;✦</button></div>
+  </div>
+</div>
+
+<!-- Relationship NO — JOLLY -->
+<div class="overlay" id="ov-rel-no">
+  <div class="ov-bg"></div><div class="ov-scan"></div>
+  <div class="ov-content">
+    <span class="ov-emoji" style="font-size:clamp(55px,18vw,100px);">🎉</span>
+    <div class="ov-text">AYY JOLLY!</div>
+    <div class="ov-sub">Best news of the day 🥳<br>Let's gooo! The universe is celebrating too!</div>
+    <div class="ov-btn"><button class="btn btn-yes" onclick="ripple(this);closeOv('ov-rel-no');setTimeout(()=>go(4),480)">LFG &nbsp;✦</button></div>
+  </div>
+</div>
+
+<!-- Chance 0.00001% -->
+<div class="overlay" id="ov-tiny">
+  <div class="ov-bg"></div><div class="ov-scan"></div>
+  <div class="ov-content">
+    <span class="ov-emoji">Ok</span>
+    <div class="ov-text">Edhu Podhum!</div>
+    <div class="ov-sub">0.00001% is all I need.<br>Watch me turn it into 100% ✦</div>
+    <div class="ov-btn"><button class="btn btn-yes" onclick="ripple(this);closeOv('ov-tiny');setTimeout(()=>go(5),480)">Ok Fine &nbsp;✦</button></div>
+  </div>
+</div>
+
+<!-- Chance YES -->
+<div class="overlay" id="ov-cyes">
+  <div class="ov-bg"></div><div class="ov-scan"></div>
+  <div class="ov-content">
+    <span class="ov-emoji">🫶</span>
+    <div class="ov-text" style="font-size:clamp(18px,5.5vw,44px);">Sathiyama Edha<br>Explain Pana<br>Mudiyala</div>
+    <div class="ov-sub">Words fall so short right now 💕<br>But the feeling is real ✦</div>
+    <div class="ov-btn"><button class="btn btn-yes" onclick="ripple(this);closeOv('ov-cyes');setTimeout(()=>go(5),480)">Continue &nbsp;✦</button></div>
+  </div>
+</div>
+
+<!-- Chance NO -->
+<div class="overlay" id="ov-cno">
+  <div class="ov-bg"></div><div class="ov-scan"></div>
+  <div class="ov-content">
+    <span class="ov-emoji">😌</span>
+    <div class="ov-text" style="font-size:clamp(19px,5.5vw,46px);">Come On Bro<br>Palagi Pakkalam</div>
+    <div class="ov-sub">Just one chance bro…<br>You won't regret it I promise 🌙</div>
+    <div class="ov-btn"><button class="btn btn-yes" onclick="ripple(this);closeOv('ov-cno');setTimeout(()=>go(5),480)">Seri Fine &nbsp;✦</button></div>
+  </div>
+</div>
+
+<!-- Final Nambikai Ela → leads to scene 6 -->
+<div class="overlay" id="ov-fno">
+  <div class="ov-bg"></div><div class="ov-scan"></div>
+  <div class="ov-content">
+    <span class="ov-emoji">🙏</span>
+    <div class="ov-text" style="font-size:clamp(20px,5.5vw,48px);">Oru Vati<br>Nambidhan Parunga</div>
+    <div class="ov-sub">Just once… that's literally all I ask 💕<br>The stars vouched for me 🌙</div>
+    <div class="ov-btn"><button class="btn btn-yes" onclick="ripple(this);closeOv('ov-fno');setTimeout(()=>go(6),480)">Ok Namburan &nbsp;✦</button></div>
+  </div>
+</div>
+
+<!-- Stethoscope NO — Think Panu Bro (loops back) -->
+<div class="overlay" id="ov-think">
+  <div class="ov-bg"></div><div class="ov-scan"></div>
+  <div class="ov-content">
+    <span class="ov-emoji">🤔</span>
+    <div class="ov-text" style="font-size:clamp(22px,6.5vw,54px);">THINK PANU BRO</div>
+    <div class="ov-sub">A stethoscope that loves you…<br>How rare is that? 🩺💓 Think again!</div>
+    <div class="ov-btn"><button class="btn btn-yes" onclick="ripple(this);closeOv('ov-think');setTimeout(()=>go(6),480)">OK 🤔</button></div>
+  </div>
+</div>
+
+<script>
+/* ════════════ COSMOS ════════════ */
+const cv=document.getElementById('cosmos'),cx=cv.getContext('2d');
+let W,H,stars=[];
+function resize(){W=cv.width=innerWidth;H=cv.height=innerHeight;}
+resize();addEventListener('resize',resize);
+function mkStar(){return{x:Math.random()*W,y:Math.random()*H,r:Math.random()*1.4+.2,spd:Math.random()*.13+.02,a:Math.random(),dir:Math.random()*Math.PI*2,ts:Math.random()*.02+.004,hue:Math.random()<.15?320:Math.random()<.3?200:210};}
+for(let i=0;i<240;i++)stars.push(mkStar());
+let shoots=[];
+function mkShoot(){return{x:Math.random()*W,y:Math.random()*H*.45,len:Math.random()*150+70,spd:Math.random()*10+6,ang:Math.PI/4+Math.random()*.35,life:1};}
+setInterval(()=>{if(shoots.length<5)shoots.push(mkShoot());},2200);
+
+function drawCosmos(){
+  cx.clearRect(0,0,W,H);
+  stars.forEach(s=>{
+    s.a+=s.ts*(Math.random()>.5?1:-1);s.a=Math.max(.08,Math.min(1,s.a));
+    s.x+=Math.cos(s.dir)*s.spd;s.y+=Math.sin(s.dir)*s.spd;
+    if(s.x<0)s.x=W;if(s.x>W)s.x=0;if(s.y<0)s.y=H;if(s.y>H)s.y=0;
+    const g=cx.createRadialGradient(s.x,s.y,0,s.x,s.y,s.r*4);
+    g.addColorStop(0,`hsla(${s.hue},85%,92%,${s.a})`);g.addColorStop(1,'transparent');
+    cx.beginPath();cx.arc(s.x,s.y,s.r*4,0,Math.PI*2);cx.fillStyle=g;cx.fill();
+  });
+  shoots=shoots.filter(s=>{
+    s.x+=Math.cos(s.ang)*s.spd;s.y+=Math.sin(s.ang)*s.spd;s.life-=.02;
+    if(s.life<=0)return false;
+    const tx=s.x-Math.cos(s.ang)*s.len,ty=s.y-Math.sin(s.ang)*s.len;
+    const sg=cx.createLinearGradient(tx,ty,s.x,s.y);
+    sg.addColorStop(0,'transparent');sg.addColorStop(.4,`rgba(200,150,255,${s.life*.5})`);sg.addColorStop(1,`rgba(255,200,255,${s.life})`);
+    cx.beginPath();cx.moveTo(tx,ty);cx.lineTo(s.x,s.y);cx.strokeStyle=sg;cx.lineWidth=1.8;cx.stroke();
+    // sparkle at tip
+    cx.beginPath();cx.arc(s.x,s.y,2*s.life,0,Math.PI*2);cx.fillStyle=`rgba(255,230,255,${s.life})`;cx.fill();
+    return true;
+  });
+  requestAnimationFrame(drawCosmos);
+}
+drawCosmos();
+setTimeout(()=>document.body.classList.add('open'),300);
+
+/* ════════════ SCENE SYSTEM ════════════ */
+let cur=0;
+const scenes=[...document.querySelectorAll('.scene')];
+const dots=[...document.querySelectorAll('.pdot')];
+function go(n){
+  const ct=document.getElementById('curtain');
+  ct.classList.add('show');
+  setTimeout(()=>{
+    scenes[cur].classList.remove('active');
+    cur=n;
+    const sc=scenes[cur];
+    sc.classList.add('active');
+    // re-trigger card animation
+    const card=sc.querySelector('.card');
+    if(card){card.classList.remove('card-in');void card.offsetWidth;card.classList.add('card-in');}
+    dots.forEach((d,i)=>d.classList.toggle('on',i===n));
+    ct.classList.remove('show');
+  },520);
+}
+
+/* ════════════ DATA ════════════ */
+const SES={id:Date.now(),time:new Date().toLocaleString()};
+
+function save(k,v){
+  SES[k]=v;
+  // save to localStorage
+  const all=JSON.parse(localStorage.getItem('crush_log')||'[]');
+  const idx=all.findIndex(r=>r.id===SES.id);
+  const c=Object.assign({},SES);
+  if(idx>=0)all[idx]=c;else all.push(c);
+  localStorage.setItem('crush_log',JSON.stringify(all));
+  // send to Formspree — goes straight to your email
+  sendToFormspree();
+}
+
+function sendToFormspree(){
+  try{
+    const data={
+      time:                  SES.time||'',
+      unfollow_reason:       SES.unfollow_reason||'',
+      proposed_him:          SES.proposed_him||'',
+      proposed_him_details:  SES.proposed_him_details||'',
+      propose_no_reason:     SES.propose_no_reason||'',
+      relationship:          SES.relationship||'',
+      give_chance:           SES.give_chance||'',
+      final_answer:          SES.final_answer||'',
+      stethoscope_answer:    SES.stethoscope_answer||''
+    };
+    fetch('https://formspree.io/f/xnjgywwz',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','Accept':'application/json'},
+      body:JSON.stringify(data)
+    }).catch(()=>{});
+  }catch(e){}
+}
+
+/* ════════════ OVERLAYS ════════════ */
+function showOv(id){
+  const el=document.getElementById(id);
+  // re-trigger burst animation on overlay-text and emoji
+  ['.ov-text','.ov-emoji'].forEach(sel=>{
+    const t=el.querySelector(sel);
+    if(t){t.style.animation='none';void t.offsetWidth;t.style.animation='';}
+  });
+  el.classList.add('show');
+}
+function closeOv(id){
+  const el=document.getElementById(id);
+  el.style.opacity='0';
+  setTimeout(()=>{el.classList.remove('show');el.style.opacity='';},480);
+}
+
+/* ════════════ SCENE 1 ════════════ */
+function showReasonInput(){
+  document.getElementById('s1btns').style.display='none';
+  const b=document.getElementById('reason-box');b.style.display='block';
+  setTimeout(()=>document.getElementById('reason-txt').focus(),300);
+}
+function submitReason(){
+  const v=document.getElementById('reason-txt').value.trim();
+  if(!v){shake(document.getElementById('reason-txt'));return;}
+  save('unfollow_reason',v);burst(document.getElementById('reason-txt'));go(2);
+}
+function s1Ishtam(){
+  save('unfollow_reason','En Ishtam 😌');
+  showOv('ov-ishtam');
+}
+
+/* ════════════ SCENE 2 ════════════ */
+function proposeYes(){
+  save('proposed_him','Yes');
+  showOv('ov-proposed-yes');
+  setTimeout(()=>document.getElementById('propose-yes-txt').focus(),600);
+}
+function submitProposeYesReason(){
+  const v=document.getElementById('propose-yes-txt').value.trim();
+  if(!v){shake(document.getElementById('propose-yes-txt'));return;}
+  save('proposed_him_details',v);
+  closeOv('ov-proposed-yes');setTimeout(()=>go(3),500);
+}
+function proposeNo(){
+  save('proposed_him','No');
+  document.getElementById('s2btns').style.display='none';
+  const b=document.getElementById('propose-box');b.style.display='block';
+  setTimeout(()=>document.getElementById('propose-txt').focus(),300);
+}
+function submitProposeReason(){
+  const v=document.getElementById('propose-txt').value.trim();
+  if(!v){shake(document.getElementById('propose-txt'));return;}
+  save('propose_no_reason',v);burst(document.getElementById('propose-txt'));go(3);
+}
+
+/* ════════════ SCENE 3 ════════════ */
+function relYes(){
+  save('relationship','Yes');
+  dropEmojis(['😢','💔','😞','😿','🥺','😭'],60,true);
+  showOv('ov-rel-yes');
+}
+function relNo(){
+  save('relationship','No');
+  dropEmojis(['🎉','🥳','😄','✨','🎊','💃','🔥','⭐'],60,false);
+  showOv('ov-rel-no');
+}
+
+/* ════════════ SCENE 4 ════════════ */
+function chanceClick(type){
+  save('give_chance',type);
+  if(type==='0.00001%')showOv('ov-tiny');
+  else if(type==='yes')showOv('ov-cyes');
+  else showOv('ov-cno');
+}
+
+/* ════════════ SCENE 5 ════════════ */
+function finalYes(){
+  save('final_answer','Namburan ✦');
+  go(6);
+}
+function finalNoClick(){
+  save('final_answer','Nambikai Ela');showOv('ov-fno');
+}
+
+/* ════════════ SCENE 6 — Stethoscope ════════════ */
+function stethYes(){
+  save('stethoscope_answer','YES 💖');
+  showILY();
+}
+function stethNo(){
+  save('stethoscope_answer','NO (looped)');
+  showOv('ov-think');
+}
+
+/* ════════════ JUMP BTN (scene 4 only) ════════════ */
+function jumpBtn(btn){
+  const vw=Math.max(50,innerWidth-170),vh=Math.max(50,innerHeight-130);
+  btn.style.position='fixed';btn.style.transition='left .22s ease,top .22s ease';btn.style.zIndex='300';
+  btn.style.left=Math.floor(Math.random()*vw)+'px';
+  btn.style.top=Math.floor(Math.random()*vh)+'px';
+}
+
+/* ════════════ EMOJI RAIN ════════════ */
+let eInt=null;
+function dropEmojis(set,n,sad){
+  const c=document.getElementById('emoji-rain');clearInterval(eInt);c.innerHTML='';
+  let done=0;
+  // continuous for sad/happy until overlay closes
+  eInt=setInterval(()=>{
+    if(done>=n){clearInterval(eInt);return;}done++;
+    const h=document.createElement('div');h.className='edrop';
+    h.textContent=set[Math.floor(Math.random()*set.length)];
+    h.style.left=Math.random()*100+'vw';
+    h.style.fontSize=(Math.random()*26+16)+'px';
+    const dur=Math.random()*3+2.5;h.style.animationDuration=dur+'s';
+    // swaying
+    h.style.animation=`eDrop ${dur}s linear forwards`;
+    h.style.transform=`translateX(${Math.random()*40-20}px)`;
+    c.appendChild(h);setTimeout(()=>h.remove(),(dur+.5)*1000);
+  },110);
+}
+
+/* ════════════ ILY ════════════ */
+function showILY(){
+  const el=document.getElementById('ily');el.classList.add('show');
+  massiveRain();spawnPetals(90);
+  for(let i=0;i<10;i++)setTimeout(()=>shoots.push(mkShoot()),i*250);
+  // floating background hearts
+  const hs=['❤️','💕','💖','💗','🌸','✨','💫'];
+  for(let i=0;i<18;i++){
+    const f=document.createElement('div');f.className='ily-float';
+    f.textContent=hs[Math.floor(Math.random()*hs.length)];
+    f.style.left=Math.random()*100+'vw';
+    f.style.animationDuration=(Math.random()*8+6)+'s';
+    f.style.animationDelay=(Math.random()*4)+'s';
+    f.style.fontSize=(Math.random()*20+14)+'px';
+    document.getElementById('ily').appendChild(f);
+  }
+}
+let rainOn=false;
+function massiveRain(){
+  if(rainOn)return;rainOn=true;
+  const s=['❤️','💕','💖','💗','🌸','✨','💫','🫶'];
+  setInterval(()=>{
+    const h=document.createElement('div');h.className='edrop';
+    h.textContent=s[Math.floor(Math.random()*s.length)];
+    h.style.left=Math.random()*100+'vw';
+    h.style.fontSize=(Math.random()*26+14)+'px';
+    const d=Math.random()*3+2;h.style.animationDuration=d+'s';
+    document.getElementById('ily').appendChild(h);
+    setTimeout(()=>h.remove(),(d+.5)*1000);
+  },130);
+  setInterval(()=>{for(let i=0;i<4;i++)shoots.push(mkShoot());},800);
+}
+const PT=['✦','❤️','🌸','💫','✨','🌙','💕','🫶','💖'];
+function spawnPetals(n){
+  for(let i=0;i<n;i++)setTimeout(()=>{
+    const p=document.createElement('div');p.className='petal';
+    p.textContent=PT[Math.floor(Math.random()*PT.length)];
+    p.style.left=Math.random()*100+'vw';p.style.top='-60px';
+    p.style.fontSize=(Math.random()*22+12)+'px';p.style.animationDuration=(Math.random()*4+3.5)+'s';
+    document.body.appendChild(p);setTimeout(()=>p.remove(),8000);
+  },i*70);
+}
+
+/* ════════════ RIPPLE on btn ════════════ */
+function ripple(btn){
+  const r=document.createElement('span');r.className='ripple';
+  const s=Math.max(btn.offsetWidth,btn.offsetHeight);
+  r.style.cssText=`width:${s}px;height:${s}px;left:50%;top:50%;margin-left:-${s/2}px;margin-top:-${s/2}px;`;
+  btn.appendChild(r);setTimeout(()=>r.remove(),650);
+}
+
+/* ════════════ SHAKE ════════════ */
+function shake(el){
+  el.animate([{transform:'translateX(-9px)'},{transform:'translateX(9px)'},{transform:'translateX(-6px)'},{transform:'translateX(6px)'},{transform:'translateX(-3px)'},{transform:'translateX(3px)'},{transform:'translateX(0)'}],{duration:420});
+  el.style.borderColor='#ff3f3f';setTimeout(()=>el.style.borderColor='',700);
+}
+/* burst glow on submit */
+function burst(el){
+  el.style.transition='box-shadow .4s,border-color .4s';
+  el.style.borderColor='rgba(199,58,240,.9)';
+  el.style.boxShadow='0 0 40px rgba(199,58,240,.4)';
+  setTimeout(()=>{el.style.borderColor='';el.style.boxShadow='';},600);
+}
+
+/* ════════════ CLICK SPARKLES ════════════ */
+document.addEventListener('click',e=>{
+  const colors=['#ff6b9d','#f5c842','#c73af0','#3a8fff','#ff9a3c'];
+  for(let i=0;i<10;i++){
+    const sp=document.createElement('div');
+    const ang=Math.random()*Math.PI*2,dist=Math.random()*65+20;
+    const col=colors[Math.floor(Math.random()*colors.length)];
+    const sz=Math.random()*4+3;
+    sp.style.cssText=`position:fixed;left:${e.clientX}px;top:${e.clientY}px;width:${sz}px;height:${sz}px;border-radius:50%;background:${col};pointer-events:none;z-index:9000;`;
+    sp.animate([
+      {transform:'translate(-50%,-50%) scale(1.3)',opacity:1},
+      {transform:`translate(calc(-50% + ${Math.cos(ang)*dist}px),calc(-50% + ${Math.sin(ang)*dist}px)) scale(0)`,opacity:0}
+    ],{duration:580,easing:'cubic-bezier(.22,1,.36,1)',fill:'forwards'});
+    document.body.appendChild(sp);setTimeout(()=>sp.remove(),620);
+  }
+  // extra star burst
+  const star=document.createElement('div');
+  star.style.cssText=`position:fixed;left:${e.clientX}px;top:${e.clientY}px;font-size:18px;pointer-events:none;z-index:9001;transform:translate(-50%,-50%);`;
+  star.textContent='✦';
+  star.animate([{opacity:1,transform:'translate(-50%,-50%) scale(0)'},{opacity:1,transform:'translate(-50%,-50%) scale(1.4)'},{opacity:0,transform:'translate(-50%,-60%) scale(.8)'}],{duration:700,easing:'ease-out',fill:'forwards'});
+  document.body.appendChild(star);setTimeout(()=>star.remove(),720);
+});
+</script>
+</body>
+</html>

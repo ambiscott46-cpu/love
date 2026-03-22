@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin — Records ✦</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Cinzel:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{--rose:#ff6b9d;--gold:#f5c842;--deep:#06000f;--purple:#c73af0;--white:#fff5f8;}
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{
+  min-height:100%;background:var(--deep);color:var(--white);
+  font-family:'Cormorant Garamond',Georgia,serif;
+}
+body::before{
+  content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+  background:radial-gradient(ellipse at top left,rgba(199,58,240,.12),transparent 60%),
+             radial-gradient(ellipse at bottom right,rgba(255,79,139,.1),transparent 60%);
+}
+
+.page{position:relative;z-index:1;max-width:680px;margin:0 auto;padding:40px 20px 80px;}
+
+.page-title{
+  font-family:'Cinzel',serif;font-size:clamp(20px,5vw,30px);font-weight:600;letter-spacing:3px;
+  background:linear-gradient(135deg,#ff6b9d,#f5c842);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+  margin-bottom:6px;
+}
+.page-sub{font-style:italic;font-size:14px;color:rgba(255,245,248,.45);margin-bottom:30px;}
+.divider{width:60px;height:1px;background:linear-gradient(90deg,transparent,var(--rose),transparent);margin:0 0 30px;}
+
+/* Stats bar */
+.stats{
+  display:flex;gap:14px;flex-wrap:wrap;margin-bottom:28px;
+}
+.stat-box{
+  background:rgba(255,107,157,.08);border:1px solid rgba(255,107,157,.18);
+  border-radius:14px;padding:14px 20px;flex:1;min-width:120px;
+}
+.stat-val{font-family:'Cinzel',serif;font-size:clamp(22px,5vw,30px);color:var(--rose);font-weight:600;}
+.stat-label{font-size:11px;letter-spacing:2px;color:rgba(255,245,248,.4);margin-top:4px;text-transform:uppercase;}
+
+/* Record cards */
+.rec{
+  background:rgba(8,0,18,.75);border:1px solid rgba(255,107,157,.16);
+  border-radius:18px;padding:22px 20px;margin-bottom:16px;
+  backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
+  animation:slideIn .5s ease both;
+}
+@keyframes slideIn{from{opacity:0;transform:translateY(14px);}to{opacity:1;transform:translateY(0);}}
+.rec-header{
+  display:flex;justify-content:space-between;align-items:center;
+  margin-bottom:14px;padding-bottom:12px;
+  border-bottom:1px solid rgba(255,107,157,.12);
+  flex-wrap:wrap;gap:8px;
+}
+.rec-num{font-family:'Cinzel',serif;font-size:14px;color:var(--rose);letter-spacing:2px;}
+.rec-time{font-size:12px;color:rgba(255,245,248,.35);font-style:italic;}
+.rec-row{display:flex;gap:10px;margin-bottom:10px;align-items:flex-start;}
+.rec-key{
+  font-family:'Cinzel',serif;font-size:10px;letter-spacing:2px;
+  color:rgba(245,200,66,.75);text-transform:uppercase;min-width:130px;
+  padding-top:2px;
+}
+.rec-val{font-size:14px;color:rgba(255,245,248,.85);line-height:1.5;word-break:break-word;}
+.badge{
+  display:inline-block;padding:3px 12px;border-radius:20px;
+  font-family:'Cinzel',serif;font-size:10px;letter-spacing:1px;
+}
+.badge-yes{background:rgba(199,58,240,.25);color:#d890ff;border:1px solid rgba(199,58,240,.3);}
+.badge-no{background:rgba(255,79,139,.15);color:#ff9ec5;border:1px solid rgba(255,79,139,.25);}
+.badge-gold{background:rgba(245,200,66,.15);color:#f5c842;border:1px solid rgba(245,200,66,.3);}
+
+/* Empty state */
+.empty{text-align:center;padding:60px 20px;color:rgba(255,245,248,.3);font-style:italic;font-size:16px;}
+.empty-icon{font-size:40px;margin-bottom:14px;display:block;}
+
+/* Action buttons */
+.action-row{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:28px;}
+.btn{
+  font-family:'Cinzel',serif;font-size:11px;letter-spacing:2px;
+  padding:12px 22px;border:none;border-radius:50px;
+  cursor:pointer;transition:transform .2s,box-shadow .2s;
+  -webkit-tap-highlight-color:transparent;
+}
+.btn:active{transform:scale(.92);}
+.btn-clear{background:transparent;color:rgba(255,107,157,.7);border:1px solid rgba(255,107,157,.3);}
+.btn-clear:hover{border-color:var(--rose);color:var(--rose);}
+.btn-back{background:linear-gradient(135deg,#c73af0,#ff4f8b);color:#fff;box-shadow:0 4px 24px rgba(199,58,240,.4);}
+.btn-back:hover{transform:scale(1.05);box-shadow:0 6px 36px rgba(199,58,240,.6);}
+.btn-refresh{background:rgba(255,255,255,.07);color:rgba(255,245,248,.7);border:1px solid rgba(255,255,255,.1);}
+.btn-refresh:hover{background:rgba(255,255,255,.12);}
+
+@media(max-width:400px){
+  .rec-key{min-width:100px;font-size:9px;}
+  .rec-val{font-size:13px;}
+}
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="page-title">Response Records</div>
+  <p class="page-sub">Only you can see this 🔒</p>
+  <div class="divider"></div>
+
+  <div class="stats" id="stats-bar">
+    <div class="stat-box"><div class="stat-val" id="stat-total">0</div><div class="stat-label">Total Responses</div></div>
+    <div class="stat-box"><div class="stat-val" id="stat-chance">—</div><div class="stat-label">Gave Chance</div></div>
+    <div class="stat-box"><div class="stat-val" id="stat-final">—</div><div class="stat-label">Final Answer</div></div>
+  </div>
+
+  <div class="action-row">
+    <button class="btn btn-back" onclick="window.location.href='index.html'">← Back</button>
+    <button class="btn btn-refresh" onclick="render()">⟳ Refresh</button>
+    <button class="btn btn-clear" onclick="clearAll()">🗑 Clear All</button>
+  </div>
+
+  <div id="records-list"></div>
+</div>
+
+<script>
+function getData(){return JSON.parse(localStorage.getItem('crush_log')||'[]');}
+
+function badge(val){
+  if(!val)return'';
+  const v=val.toLowerCase();
+  if(v==='yes'||v==='yes ✦'||v==='namburan ✦')return`<span class="badge badge-yes">${val}</span>`;
+  if(v==='no')return`<span class="badge badge-no">${val}</span>`;
+  if(v.includes('0.00001'))return`<span class="badge badge-gold">${val}</span>`;
+  return`<span style="color:rgba(255,245,248,.85)">${val}</span>`;
+}
+
+function row(key,val){
+  if(!val)return'';
+  return`<div class="rec-row"><div class="rec-key">${key}</div><div class="rec-val">${badge(val)}</div></div>`;
+}
+
+function render(){
+  const all=getData();
+  const list=document.getElementById('records-list');
+
+  // Stats
+  document.getElementById('stat-total').textContent=all.length;
+  const chances=all.filter(r=>r.give_chance==='yes').length;
+  document.getElementById('stat-chance').textContent=chances?chances+'×':'—';
+  const finals=all.filter(r=>r.final_answer&&r.final_answer.includes('Namburan')).length;
+  document.getElementById('stat-final').textContent=finals?finals+'×':'—';
+
+  if(!all.length){
+    list.innerHTML='<div class="empty"><span class="empty-icon">🌙</span>No responses yet.<br>Send the link and wait ✦</div>';
+    return;
+  }
+
+  list.innerHTML=all.slice().reverse().map((r,i)=>{
+    const num=all.length-i;
+    return`<div class="rec" style="animation-delay:${i*.07}s">
+      <div class="rec-header">
+        <span class="rec-num">Response #${num}</span>
+        <span class="rec-time">${r.time||'Unknown time'}</span>
+      </div>
+      ${row('Unfollow Reason',r.unfollow_reason)}
+      ${row('Proposed Him',r.proposed_him)}
+      ${r.proposed_him==='Yes'&&r.proposed_him_details?row('Proposal Details',r.proposed_him_details):''}
+      ${r.propose_no_reason?row('Why Not Proposed',r.propose_no_reason):''}
+      ${row('In Relationship',r.relationship)}
+      ${row('Give Chance',r.give_chance)}
+      ${row('Final Answer',r.final_answer)}
+      ${row('Stethoscope Q',r.stethoscope_answer)}
+    </div>`;
+  }).join('');
+}
+
+function clearAll(){
+  if(confirm('Delete all records? This cannot be undone.')){
+    localStorage.removeItem('crush_log');render();
+  }
+}
+
+render();
+// Auto-refresh every 10s
+setInterval(render,10000);
+</script>
+</body>
+</html>
