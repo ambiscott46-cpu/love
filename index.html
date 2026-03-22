@@ -666,14 +666,17 @@ function save(k,v){
   if(idx>=0)all[idx]=c;else all.push(c);
   localStorage.setItem('crush_log',JSON.stringify(all));
 }
-
-/* sends to your email ONCE only at the very end */
-function sendToFormspree(){
+/* ONE TIME SEND — only called from showILY, never anywhere else */
+let _sent=false;
+function finalSend(){
+  if(_sent)return;
+  _sent=true;
   try{
     fetch('https://formspree.io/f/xnjgywwz',{
       method:'POST',
       headers:{'Content-Type':'application/json','Accept':'application/json'},
       body:JSON.stringify({
+        _subject:             'She answered! 💕',
         time:                 SES.time||'',
         unfollow_reason:      SES.unfollow_reason||'',
         proposed_him:         SES.proposed_him||'',
@@ -774,13 +777,9 @@ function finalNoClick(){
 }
 
 /* ════════════ SCENE 6 — Stethoscope ════════════ */
-let alreadySent=false; /* guard — fires only once ever */
+let alreadySent=false;
 function stethYes(){
   save('stethoscope_answer','YES 💖');
-  if(!alreadySent){
-    alreadySent=true;
-    sendToFormspree();
-  }
   showILY();
 }
 function stethNo(){
@@ -818,6 +817,7 @@ function dropEmojis(set,n,sad){
 
 /* ════════════ ILY ════════════ */
 function showILY(){
+  finalSend(); /* ← ONLY place this ever gets called */
   const el=document.getElementById('ily');el.classList.add('show');
   massiveRain();spawnPetals(90);
   for(let i=0;i<10;i++)setTimeout(()=>shoots.push(mkShoot()),i*250);
