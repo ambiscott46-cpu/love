@@ -305,19 +305,6 @@ body.open #cbot{transform:translateY(100%);}
 </head>
 <body>
 
-<!-- ═══ FORMSPREE FORM (hidden) ═══ -->
-<form id="formspree-form" style="display:none;">
-  <input type="hidden" name="time" id="f-time">
-  <input type="hidden" name="unfollow_reason" id="f-unfollow">
-  <input type="hidden" name="proposed_him" id="f-proposed">
-  <input type="hidden" name="proposed_him_details" id="f-proposed-details">
-  <input type="hidden" name="propose_no_reason" id="f-propose-no">
-  <input type="hidden" name="relationship" id="f-relationship">
-  <input type="hidden" name="give_chance" id="f-chance">
-  <input type="hidden" name="final_answer" id="f-final">
-  <input type="hidden" name="stethoscope_answer" id="f-steth">
-</form>
-
 <div class="cin" id="ctop"></div>
 <div class="cin" id="cbot"></div>
 <canvas id="cosmos"></canvas>
@@ -671,36 +658,32 @@ function go(n){
 
 /* ════════════ DATA ════════════ */
 const SES={id:Date.now(),time:new Date().toLocaleString()};
-
 function save(k,v){
   SES[k]=v;
-  // save to localStorage
   const all=JSON.parse(localStorage.getItem('crush_log')||'[]');
   const idx=all.findIndex(r=>r.id===SES.id);
   const c=Object.assign({},SES);
   if(idx>=0)all[idx]=c;else all.push(c);
   localStorage.setItem('crush_log',JSON.stringify(all));
-  // send to Formspree — goes straight to your email
-  sendToFormspree();
 }
 
+/* sends to your email ONCE only at the very end */
 function sendToFormspree(){
   try{
-    const data={
-      time:                  SES.time||'',
-      unfollow_reason:       SES.unfollow_reason||'',
-      proposed_him:          SES.proposed_him||'',
-      proposed_him_details:  SES.proposed_him_details||'',
-      propose_no_reason:     SES.propose_no_reason||'',
-      relationship:          SES.relationship||'',
-      give_chance:           SES.give_chance||'',
-      final_answer:          SES.final_answer||'',
-      stethoscope_answer:    SES.stethoscope_answer||''
-    };
     fetch('https://formspree.io/f/xnjgywwz',{
       method:'POST',
       headers:{'Content-Type':'application/json','Accept':'application/json'},
-      body:JSON.stringify(data)
+      body:JSON.stringify({
+        time:                 SES.time||'',
+        unfollow_reason:      SES.unfollow_reason||'',
+        proposed_him:         SES.proposed_him||'',
+        proposed_him_details: SES.proposed_him_details||'',
+        propose_no_reason:    SES.propose_no_reason||'',
+        relationship:         SES.relationship||'',
+        give_chance:          SES.give_chance||'',
+        final_answer:         SES.final_answer||'',
+        stethoscope_answer:   SES.stethoscope_answer||''
+      })
     }).catch(()=>{});
   }catch(e){}
 }
@@ -793,6 +776,7 @@ function finalNoClick(){
 /* ════════════ SCENE 6 — Stethoscope ════════════ */
 function stethYes(){
   save('stethoscope_answer','YES 💖');
+  sendToFormspree(); /* ← sends ALL answers to your email just once here */
   showILY();
 }
 function stethNo(){
