@@ -774,9 +774,13 @@ function finalNoClick(){
 }
 
 /* ════════════ SCENE 6 — Stethoscope ════════════ */
+let alreadySent=false; /* guard — fires only once ever */
 function stethYes(){
   save('stethoscope_answer','YES 💖');
-  sendToFormspree(); /* ← sends ALL answers to your email just once here */
+  if(!alreadySent){
+    alreadySent=true;
+    sendToFormspree();
+  }
   showILY();
 }
 function stethNo(){
